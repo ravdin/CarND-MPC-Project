@@ -98,8 +98,28 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+          Eigen::VectorXd xvals = Eigen::VectorXd::Map(ptsx.data(), ptsx.size());
+          Eigen::VectorXd yvals = Eigen::VectorXd::Map(ptsy.data(), ptsy.size());
+
+          // Convert to vehicle centered coordinates.
+          for (int i = 0; i < xvals.size(); i++) {
+            double x = xvals[i] - px;
+            double y = xvals[i] - py;
+            xvals[i] = x * cos(psi) + y * sin(psi);
+            yvals[i] = -x * sin(psi) + y * cos(psi);
+          }
+
+          Eigen::VectorXd coeffs = polyfit(xvals, yvals, 3);
+
+          double cte = polyeval(coeffs, 0);
+          double epsi = atan(coeffs[1]);
+
+          Eigen::VectorXd state(6);
+          state << 0, 0, 0, v, cte, epsi;
+          auto solution = mpc.Solve(state, coeffs);
+
+          double steer_value = -solution[0] / deg2rad(25.0);
+          double throttle_value = solution[1];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -107,7 +127,7 @@ int main() {
           msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
 
-          //Display the MPC predicted trajectory 
+          //Display the MPC predicted trajectory
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
 
