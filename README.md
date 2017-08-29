@@ -11,21 +11,28 @@ The model has six state variables:
 
 - x: The car's x-coordinate.
 - y: The car's y-coordinate.
-- psi: The car's orientation angle.
+- &psi;: The car's orientation angle.
 - v: The car's velocity.
 - cte: Cross track error, or the distance from the car to its predicted state.
-- epsi: Psi error, or the distance between the current angle and the predicted angle.
+- e&psi;: Psi error, or the distance between the current angle and the predicted angle.
 
 ### Actuators
 
 Similar to an actual car, the actuators have two variables:
 
-- delta: The steering angle.  This is between -25 and 25 degrees, or -0.4363 radians to 0.4363 radians.
+- &delta;: The steering angle.  This is between -25 and 25 degrees, or -0.4363 radians to 0.4363 radians.
 - a: The acceleration value, which is normalized between -1.0 and 1.0.  Negative values indicate a braking action and positive values indicate the accelerator.
 
 ### Update equations
 
-TBC
+The predicted states for the next time step are calculated as follows:
+
+- x<sub>t+1</sub> = x<sub>t</sub> + v<sub>t</sub> \* cos(&psi;<sub>t</sub>) \* dt
+- y<sub>t+1</sub> = y<sub>t</sub> + v<sub>t</sub> \* sin(&psi;<sub>t</sub>) \* dt
+- &psi;<sub>t+1</sub> = &psi;<sub>t</sub> + (v<sub>t</sub>/L<sub>f</sub>) \* &delta; \* dt
+- v<sub>t+1</sub> = v<sub>t</sub> + a<sub>t</sub> \* dt
+- cte<sub>t+1</sub> = cte<sub>t</sub> + v<sub>t</sub> \* sin(e&psi;<sub>t</sub>) \* dt
+- e&psi;<sub>t+1</sub> = e&psi;<sub>t</sub> + (v<sub>t</sub>/L<sub>f</sub>) \* &delta; \* dt
 
 ### Timestep length and elapsed duration
 
@@ -33,7 +40,13 @@ For the values `N` and `dt` I chose 10 and 0.1, respectively.  These values were
 
 ### Latency
 
-TBC
+Part of the assignment is to handle latency from the model input.  The lag between the signal and the reaction time from the car is set to 100 ms.
+
+In main.cpp, lines 122-127, I created predicted state values based on the input.  This is the state that is passed into the MPC controller.
+
+The equations are simplified because x, y, and &psi; are normalized to 0 prior to passing to the MPC solver (the coordinates from the car's perspective rather than a global perspective).  This means there is no need to calculate sine or cosine of &psi;, which are 0 and 1 respectively.
+
+L<sub>f</sub> and dt are required for the equations.  I chose L<sub>f</sub> as 2.67, the same value given in main.cpp.  The dt variable must be 0.1, regardless of dt in MPC.cpp (it is a coincidence the values are the same) as the latency is defined as 0.1 seconds, or 100 ms.
 
 ## Dependencies
 
