@@ -22,7 +22,7 @@ double dt = 0.1;
 const double Lf = 2.67;
 
 // Start indexes
-double ref_v = 7 * N;
+double ref_v = 40;
 size_t x_start     = 0;
 size_t y_start     = N;
 size_t psi_start   = 2 * N;
@@ -52,23 +52,31 @@ class FG_eval {
     // TODO: Define the cost related the reference state and
     // any anything you think may be beneficial.
 
+    const int cte_cost = 4000;
+    const int epsi_cost = 4000;
+    const int v_cost = 1;
+    const int delta_cost = 1000;
+    const int a_cost = 10;
+    const int delta_start_cost = 80000;
+    const int a_start_cost = 10;
+
     // The part of the cost based on the reference state.
     for (int t = 0; t < N; t++) {
-      fg[0] += CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += cte_cost * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += epsi_cost * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += v_cost * CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
     for (int t = 0; t < N - 1; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t], 2);
+      fg[0] += delta_cost * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += a_cost * CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (int t = 0; t < N - 2; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += delta_start_cost * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += a_start_cost * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
     fg[1 + x_start] = vars[x_start];
@@ -122,7 +130,7 @@ MPC::~MPC() {}
 
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
-  size_t i;
+  //size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
   // TODO: Set the number of model variables (includes both states and inputs).
@@ -145,17 +153,25 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // SHOULD BE 0 besides initial state.
   Dvector vars(n_vars);
   for (int i = 0; i < n_vars; i++) {
-    vars[i] = 0;
+    vars[i] = 0.0;
   }
+  /*
   vars[x_start] = x;
   vars[y_start] = y;
   vars[psi_start] = psi;
   vars[v_start] = v;
   vars[cte_start] = cte;
   vars[epsi_start] = epsi;
+  */
 
   Dvector vars_lowerbound(n_vars);
   Dvector vars_upperbound(n_vars);
+
+  for (int i = 0; i < delta_start; i++) {
+    vars_lowerbound[i] = -1e19;
+    vars_upperbound[i] = 1e19;
+  }
+
   // TODO: Set lower and upper limits for variables.
   for (int i = delta_start; i < a_start; i++) {
     vars_lowerbound[i] = -0.4363;
@@ -229,9 +245,9 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   result.push_back(solution.x[delta_start]);
   result.push_back(solution.x[a_start]);
 
-  for (int i = 0; i < N - 1; i++) {
-    result.push_back(solution.x[x_start + i + 1]);
-    result.push_back(solution.x[y_start + i + 1]);
+  for (int i = 1; i < N; i++) {
+    result.push_back(solution.x[x_start + i]);
+    result.push_back(solution.x[y_start + i]);
   }
 
   return result;
