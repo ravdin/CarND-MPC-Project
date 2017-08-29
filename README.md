@@ -3,6 +3,38 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## MPC Controller
+
+### State
+
+The model has six state variables:
+
+- x: The car's x-coordinate.
+- y: The car's y-coordinate.
+- psi: The car's orientation angle.
+- v: The car's velocity.
+- cte: Cross track error, or the distance from the car to its predicted state.
+- epsi: Psi error, or the distance between the current angle and the predicted angle.
+
+### Actuators
+
+Similar to an actual car, the actuators have two variables:
+
+- delta: The steering angle.  This is between -25 and 25 degrees, or -0.4363 radians to 0.4363 radians.
+- a: The acceleration value, which is normalized between -1.0 and 1.0.  Negative values indicate a braking action and positive values indicate the accelerator.
+
+### Update equations
+
+TBC
+
+### Timestep length and elapsed duration
+
+For the values `N` and `dt` I chose 10 and 0.1, respectively.  These values were chosen in the class example.  It seems reasonable to divide the time steps into 10 intervals of 100 milliseconds.  Other values, such as 20 steps of 50 ms did not work as well so I abandoned the approach of changing these values.
+
+### Latency
+
+TBC
+
 ## Dependencies
 
 * cmake >= 3.5
@@ -19,7 +51,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Run either `install-mac.sh` or `install-ubuntu.sh`.
   * If you install from source, checkout to commit `e94b6e1`, i.e.
     ```
-    git clone https://github.com/uWebSockets/uWebSockets 
+    git clone https://github.com/uWebSockets/uWebSockets
     cd uWebSockets
     git checkout e94b6e1
     ```
@@ -42,7 +74,7 @@ Self-Driving Car Engineer Nanodegree Program
        per this [forum post](https://discussions.udacity.com/t/incorrect-checksum-for-freed-object/313433/19).
   * Linux
     * You will need a version of Ipopt 3.12.1 or higher. The version available through `apt-get` is 3.11.x. If you can get that version to work great but if not there's a script `install_ipopt.sh` that will install Ipopt. You just need to download the source from the Ipopt [releases page](https://www.coin-or.org/download/source/Ipopt/).
-    * Then call `install_ipopt.sh` with the source directory as the first argument, ex: `sudo bash install_ipopt.sh Ipopt-3.12.1`. 
+    * Then call `install_ipopt.sh` with the source directory as the first argument, ex: `sudo bash install_ipopt.sh Ipopt-3.12.1`.
   * Windows: TODO. If you can use the Linux subsystem and follow the Linux instructions.
 * [CppAD](https://www.coin-or.org/CppAD/)
   * Mac: `brew install cppad`

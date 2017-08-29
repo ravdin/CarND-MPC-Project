@@ -52,13 +52,13 @@ class FG_eval {
     // TODO: Define the cost related the reference state and
     // any anything you think may be beneficial.
 
-    const int cte_cost = 4000;
-    const int epsi_cost = 4000;
+    const int cte_cost = 1000;
+    const int epsi_cost = 1000;
     const int v_cost = 1;
-    const int delta_cost = 1000;
-    const int a_cost = 10;
+    const int delta_cost = 4000;
+    const int a_cost = 1;
     const int delta_start_cost = 80000;
-    const int a_start_cost = 10;
+    const int a_start_cost = 1;
 
     // The part of the cost based on the reference state.
     for (int t = 0; t < N; t++) {
@@ -155,14 +155,6 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   for (int i = 0; i < n_vars; i++) {
     vars[i] = 0.0;
   }
-  /*
-  vars[x_start] = x;
-  vars[y_start] = y;
-  vars[psi_start] = psi;
-  vars[v_start] = v;
-  vars[cte_start] = cte;
-  vars[epsi_start] = epsi;
-  */
 
   Dvector vars_lowerbound(n_vars);
   Dvector vars_upperbound(n_vars);
